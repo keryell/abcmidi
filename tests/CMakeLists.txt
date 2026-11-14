@@ -30,15 +30,34 @@ set(GOLDEN_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/golden")
 set(TEST_TMPDIR "${CMAKE_CURRENT_BINARY_DIR}/tmp")
 
 # With ABCMIDI_VALGRIND, every program that a test runs is run under
-# valgrind, and any valgrind error, a definite memory leak included, makes
-# the program exit with status 99 instead of its own, which fails the test.
-# The report is on stderr, which the tests print when they fail.  Empty
-# otherwise, so that the programs run directly.
+# valgrind, and any valgrind error makes the program exit with status 99
+# instead of its own, which fails the test.  The report is on stderr, which
+# the tests print when they fail.  Empty otherwise, so that the programs run
+# directly.  The checks are the strictest that memcheck offers, but for
+# memory still reachable at exit, which the system takes back and which no
+# program frees on all its exit paths:
+#   - every leak is an error: definite, indirect and possible, and so is a
+#     file left open (--track-fds);
+#   - uninitialised values are tracked to their origin and checked
+#     precisely, also in partly valid loads;
+#   - heap blocks get 128-byte red zones, and freed blocks stay poisoned in
+#     a 1 GB queue to catch late uses;
+#   - new and freed memory is filled with 0xa5 and 0x5a, so that a read of
+#     it shows in the output even where memcheck does not report it.
+# --read-var-info=yes, which names the variables in the reports but triples
+# the run time, can be added with VALGRIND_OPTS when looking into a failure.
 set(ABCMIDI_LAUNCHER)
 if(ABCMIDI_VALGRIND)
   find_program(VALGRIND_EXECUTABLE valgrind REQUIRED)
   set(ABCMIDI_LAUNCHER "${VALGRIND_EXECUTABLE}" --quiet --error-exitcode=99
-    --leak-check=full --errors-for-leak-kinds=definite --track-origins=yes)
+    --error-limit=no --num-callers=50
+    --leak-check=full --show-leak-kinds=definite,indirect,possible
+    --errors-for-leak-kinds=definite,indirect,possible
+    --track-fds=yes
+    --track-origins=yes --expensive-definedness-checks=yes
+    --partial-loads-ok=no
+    --redzone-size=128 --freelist-vol=1000000000 --freelist-big-blocks=0
+    --malloc-fill=0xa5 --free-fill=0x5a)
 endif()
 
 # --- Smoke tests: -ver on every binary ---

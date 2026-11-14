@@ -82,8 +82,9 @@ ctest --preset debug -L smoke
 ```
 
 With the `valgrind` preset (valgrind must be installed), every program that
-a test runs is run under valgrind, and a valgrind error, such as a read of
-uninitialised memory or a definite memory leak, fails the test:
+a test runs is run under valgrind with strict memcheck options, and a
+valgrind error, such as a read of uninitialised memory, a memory leak or a
+file left open, fails the test:
 
 ```sh
 cmake --preset valgrind
