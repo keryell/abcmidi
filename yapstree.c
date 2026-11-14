@@ -969,6 +969,7 @@ static void freefeature(void* item, featuretype type)
     break;
   case TEMPO:
     freetempo(item);
+    free(item); /* [RK] 2026-11-14 */
     break;
   case CLEF:
   case TIME:

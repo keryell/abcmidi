@@ -16289,3 +16289,8 @@ backslash \", is printed with this backslash.  getISO() (drawtune.c)
 read the two characters after it, past the end of the string.  Under
 the valgrind or sanitize preset of the tests, the new test
 yaps_sample_text_fields fails without the fix.
+
+yaps: the tempo of a Q: field in the body of a tune is freed with the
+tune.  freefeature() (yapstree.c) freed its texts but not the tempo
+itself, which the new test yaps_sample_text_fields reports under the
+valgrind preset.
