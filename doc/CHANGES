@@ -16262,3 +16262,12 @@ music, found none.  text_data() now writes the header lines without
 delay.  The output with -lyrics, which has no such header, is
 unchanged.  New golden test abc2midi_words_tempo
 (samples/words_tempo.abc).
+
+
+November 14 2026 [RK]
+
+abc2midi: after the last part of a P: play order, partbreak()
+(genmidi.c) took the label of the next part from pitch[notes], an
+element after the notes that is allocated but never written.  It now
+gives no label there.  Under the new valgrind preset of the tests,
+abc2midi_pmar_demo_5 and abc2midi_pmar_partdemo fail without the fix.
