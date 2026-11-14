@@ -16,7 +16,8 @@
 #
 #   3. Exit-status tests - abc2midi's exit status and messages on specific
 #                      inputs and options, and every tune of every sample
-#                      rendered with -Werror.
+#                      rendered with -Werror.  abc2abc, yaps and abcmatch
+#                      also run on every sample and must exit 0.
 #
 # To regenerate golden files after an intentional change:
 #
@@ -510,6 +511,30 @@ foreach(sample IN LISTS all_samples)
     RC            ${rc}
     ALL_TUNES
   )
+endforeach()
+
+# Every sample through abc2abc, yaps and abcmatch, whose golden tests cover
+# only some samples: the program must exit 0.  The value of these tests is
+# under the sanitize and valgrind presets, where a memory error fails them,
+# such as yaps reading past a title that ends with a backslash (see
+# samples/text_fields.abc).  Test names start with the program name so that
+# the CI per-tool jobs run them.
+file(MAKE_DIRECTORY "${TEST_TMPDIR}")
+foreach(sample IN LISTS all_samples)
+  get_filename_component(stem "${sample}" NAME_WE)
+  add_test(NAME abc2abc_sample_${stem}
+    COMMAND ${ABCMIDI_LAUNCHER} $<TARGET_FILE:abc2abc> "${SAMPLES_DIR}/${sample}"
+    WORKING_DIRECTORY "${TEST_TMPDIR}")
+  add_test(NAME yaps_sample_${stem}
+    COMMAND ${ABCMIDI_LAUNCHER} $<TARGET_FILE:yaps> "${SAMPLES_DIR}/${sample}"
+      -o "${TEST_TMPDIR}/yaps_sample_${stem}.ps"
+    WORKING_DIRECTORY "${TEST_TMPDIR}")
+  add_test(NAME abcmatch_sample_${stem}
+    COMMAND ${ABCMIDI_LAUNCHER} $<TARGET_FILE:abcmatch> "${SAMPLES_DIR}/${sample}"
+      -pitch_hist
+    WORKING_DIRECTORY "${TEST_TMPDIR}")
+  set_tests_properties(abc2abc_sample_${stem} yaps_sample_${stem}
+    abcmatch_sample_${stem} PROPERTIES LABELS "sample")
 endforeach()
 
 # --- Regenerate-golden convenience target ---

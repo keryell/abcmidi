@@ -16303,3 +16303,9 @@ one more position, as for samples/barloc_long.abc, of two voices of
 fix under the sanitize preset.  Its limit on the number of notes left
 no room for the bar line that it adds after the last note, and was the
 one of a tune, 10000, also for a template, whose arrays have 1000.
+
+Tests: the new valgrind preset (cmake --preset valgrind) runs every
+program of the test suite under valgrind, and a valgrind error fails
+the test; a CI job runs it.  abc2abc, yaps and abcmatch also run on
+every sample, in the new tests abc2abc_sample_*, yaps_sample_* and
+abcmatch_sample_*, which must exit 0.
