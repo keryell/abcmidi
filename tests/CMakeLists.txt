@@ -341,6 +341,13 @@ add_golden_test(
 # They were all one tick later.
 add_golden_test(TYPE abc2midi SAMPLE words_tempo.abc)
 
+# Regression test for \% in a text field, which is a percent sign and not
+# the start of a comment (see samples/text_fields.abc): abc2midi named the
+# track "50\" instead of "50% faster", and abc2abc must still write the
+# fields as they are.
+add_golden_test(TYPE abc2midi SAMPLE text_fields.abc)
+add_golden_test(TYPE abc2abc  SAMPLE text_fields.abc)
+
 # --- Exit-status tests ---
 #
 # These pin abc2midi's exit status, and optionally its messages, for given

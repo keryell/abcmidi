@@ -16271,3 +16271,15 @@ abc2midi: after the last part of a P: play order, partbreak()
 element after the notes that is allocated but never written.  It now
 gives no label there.  Under the new valgrind preset of the tests,
 abc2midi_pmar_demo_5 and abc2midi_pmar_partdemo fail without the fix.
+
+abc2midi, yaps: \% in a field such as T: is a percent sign, and no
+longer the start of a comment (abc 2.2 sections 2.2.5 and 8.2).
+parsefield() (parseabc.c) ended the field at its %: abc2midi named the
+tracks of samples/temperament.abc, whose titles start with
+"\%\%MIDI", "\" instead of "%%MIDI temperamentlinear - microtone
+accidentals in cents", and yaps printed "\" as their title.
+strip_field_comment() now ends the field at the first % that does not
+follow a backslash, keeps \\ as it is, and gives \% as % to all the
+programs but abc2abc, which writes the field as it reads it.  New
+golden tests abc2midi_text_fields and abc2abc_text_fields
+(samples/text_fields.abc).
