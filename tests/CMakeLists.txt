@@ -28,10 +28,23 @@ set(SAMPLES_DIR "${PROJECT_SOURCE_DIR}/samples")
 set(GOLDEN_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/golden")
 set(TEST_TMPDIR "${CMAKE_CURRENT_BINARY_DIR}/tmp")
 
+# With ABCMIDI_VALGRIND, every program that a test runs is run under
+# valgrind, and any valgrind error, a definite memory leak included, makes
+# the program exit with status 99 instead of its own, which fails the test.
+# The report is on stderr, which the tests print when they fail.  Empty
+# otherwise, so that the programs run directly.
+set(ABCMIDI_LAUNCHER)
+if(ABCMIDI_VALGRIND)
+  find_program(VALGRIND_EXECUTABLE valgrind REQUIRED)
+  set(ABCMIDI_LAUNCHER "${VALGRIND_EXECUTABLE}" --quiet --error-exitcode=99
+    --leak-check=full --errors-for-leak-kinds=definite --track-origins=yes)
+endif()
+
 # --- Smoke tests: -ver on every binary ---
 
 foreach(bin IN LISTS ABCMIDI_BINARIES)
-  add_test(NAME "smoke_${bin}_ver" COMMAND $<TARGET_FILE:${bin}> -ver)
+  add_test(NAME "smoke_${bin}_ver"
+    COMMAND ${ABCMIDI_LAUNCHER} $<TARGET_FILE:${bin}> -ver)
   set_tests_properties("smoke_${bin}_ver" PROPERTIES LABELS "smoke")
 endforeach()
 
@@ -81,6 +94,7 @@ function(add_golden_test)
       "-DABC2MIDI_ARGS=${T_ABC2MIDI_ARGS}"
       "-DABC2MIDI_TUNE=${T_TUNE}"
       -DABC2MIDI_EXPECT_ERRORS=${T_EXPECT_ERRORS}
+      "-DLAUNCHER=${ABCMIDI_LAUNCHER}"
       ${BINARY_DEFS}
       -P "${CMAKE_CURRENT_SOURCE_DIR}/run_test.cmake"
   )
@@ -369,6 +383,7 @@ function(add_exit_status_test)
       -DALL_TUNES=${T_ALL_TUNES}
       "-DEXPECTED_REGEX=${T_REGEX}"
       "-DABC2MIDI_ARGS=${T_ABC2MIDI_ARGS}"
+      "-DLAUNCHER=${ABCMIDI_LAUNCHER}"
       -P "${CMAKE_CURRENT_SOURCE_DIR}/run_exit_status.cmake"
   )
   set_tests_properties("${T_NAME}" PROPERTIES LABELS "exit-status")
