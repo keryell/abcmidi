@@ -16294,3 +16294,12 @@ yaps: the tempo of a Q: field in the body of a tune is freed with the
 tune.  freefeature() (yapstree.c) freed its texts but not the tempo
 itself, which the new test yaps_sample_text_fields reports under the
 valgrind preset.
+
+abcmatch: make_note_representation() (abcmatch.c) no longer writes
+past the end of its arrays.  After counting as many bars as the array
+of bar positions has, 2000 for a tune and 300 for a template, it wrote
+one more position, as for samples/barloc_long.abc, of two voices of
+1040 bars: the new test abcmatch_sample_barloc_long fails without the
+fix under the sanitize preset.  Its limit on the number of notes left
+no room for the bar line that it adds after the last note, and was the
+one of a tune, 10000, also for a template, whose arrays have 1000.
