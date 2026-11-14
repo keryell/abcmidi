@@ -2129,5 +2129,7 @@ int main(int argc, char *argv[])
   if(pulseanalysis || corestats || percanalysis ||\
     percpatternfor || percpattern || percpatternhist ||\
     pitchclassanalysis || nseqfor || nseqdistinct || keystabilityAnalysis) loadEvents();
+  if (F != NULL) fclose(F); /* [RK] 2026-11-14 */
+  if (outhandle != stdout) fclose(outhandle);
   return 0;
 }
